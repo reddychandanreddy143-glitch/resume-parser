@@ -1,24 +1,10 @@
-# Virtual Environment
 venv/
-env/
-ENV/
-
-# Python Cache
 __pycache__/
-*.py[cod]
-*$py.class
-
-# Environment Variables & Secrets
-.env
-
-# Uploads Folder (Ignore uploaded files, keep folder)
+*.pyc
 uploads/*
 !uploads/.gitkeep
-
-# Local SQLite databases
-*.sqlite3
-*.db
-
-# IDE & Editor Settings
+resumes.db
+sample_resume.pdf
+sample_resume.docx
 .vscode/
 .idea/
