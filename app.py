@@ -18,8 +18,11 @@ from nlp.parser import parse_resume
 
 app = Flask(__name__)
 app.secret_key = "reddy_ai_secret_key_8888"
-app.config["UPLOAD_FOLDER"] = config.UPLOAD_FOLDER
+app.config["UPLOAD_FOLDER"] = os.path.abspath(config.UPLOAD_FOLDER)
 app.config["MAX_CONTENT_LENGTH"] = config.MAX_CONTENT_LENGTH
+
+# Ensure upload directory exists immediately on server start
+os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
 login_manager = LoginManager()
 login_manager.login_view = "index"
@@ -118,9 +121,12 @@ def upload_and_parse():
         return jsonify({"error": "No file selected."}), 400
 
     if file and allowed_file(file.filename):
+        os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+
         safe_base = secure_filename(file.filename)
         user_specific_filename = f"u{current_user.id}_{safe_base}"
-        save_path = os.path.join(app.config["UPLOAD_FOLDER"], user_specific_filename)
+        save_path = os.path.abspath(os.path.join(app.config["UPLOAD_FOLDER"], user_specific_filename))
+        
         file.save(save_path)
 
         try:
