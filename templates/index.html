@@ -3,169 +3,706 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Resume Parser & ATS Engine</title>
+  <title>Reddy AI | Resume Parser & ATS Engine</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
   <style>
-    body { background-color: #f8f9fa; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    .card { border-radius: 12px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .badge-skill { font-size: 0.85rem; margin: 2px; }
+    :root {
+      --bg-dark: #0f111a;
+      --card-bg: #181b28;
+      --card-border: #232738;
+      --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      --accent-purple: #818cf8;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+    }
+
+    .app-header {
+      background: rgba(24, 27, 40, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 14px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .gemini-sparkle {
+      font-size: 1.4rem;
+      background: linear-gradient(135deg, #a855f7, #6366f1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .brand-text h1 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin: 0;
+      letter-spacing: -0.5px;
+      color: #fff;
+    }
+    .badge-pro {
+      font-size: 0.65rem;
+      background: var(--primary-gradient);
+      color: #fff;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #232738;
+      border: 1px solid #2f354c;
+      padding: 6px 14px;
+      border-radius: 30px;
+    }
+    .user-dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+    }
+    .user-name {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+    .auth-btn-ghost {
+      background: transparent;
+      border: none;
+      color: #ef4444;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0 0 0 6px;
+      cursor: pointer;
+    }
+    .auth-btn-primary {
+      background: var(--primary-gradient);
+      color: #fff;
+      border: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 8px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .auth-btn-primary:hover { opacity: 0.9; }
+
+    .card-custom {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+    }
+
+    .stat-widget {
+      padding: 20px;
+      border-radius: 14px;
+      background: #181b28;
+      border: 1px solid var(--card-border);
+    }
+
+    .upload-zone {
+      border: 2px dashed #333a52;
+      border-radius: 12px;
+      padding: 36px 20px;
+      text-align: center;
+      background: #12141f;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--accent-purple);
+      background: #181c2e;
+    }
+    .upload-icon { font-size: 2.5rem; color: var(--accent-purple); }
+
+    .table-dark-custom {
+      --bs-table-bg: transparent;
+      --bs-table-color: #cbd5e1;
+      --bs-table-border-color: #232738;
+    }
+    .badge-skill {
+      font-size: 0.76rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin: 2px;
+    }
+    .badge-lang { background: #312e81; color: #c7d2fe; }
+    .badge-framework { background: #1e3a8a; color: #bfdbfe; }
+    .badge-db { background: #451a03; color: #fde68a; }
+    .badge-cloud { background: #0c4a6e; color: #bae6fd; }
+    .badge-ai { background: #581c87; color: #f5d0fe; }
+
+    .auth-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(10, 12, 18, 0.8);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+    .auth-box {
+      width: 100%;
+      max-width: 420px;
+      background: #181b28;
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+    .auth-tabs {
+      display: flex;
+      border-bottom: 1px solid #282d42;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .auth-tab {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    .auth-tab.active {
+      color: #fff;
+      border-bottom: 2px solid #6366f1;
+    }
+    .auth-close {
+      position: absolute;
+      right: 0; top: 0;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    .auth-form label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      display: block;
+    }
+    .auth-form input {
+      width: 100%;
+      background: #0f111a;
+      border: 1px solid #282d42;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+    }
+    .auth-form input:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+    .auth-submit-btn {
+      width: 100%;
+      background: var(--primary-gradient);
+      color: #fff;
+      border: none;
+      padding: 11px;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .auth-error {
+      color: #f87171;
+      font-size: 0.82rem;
+      margin-bottom: 12px;
+      display: none;
+    }
   </style>
 </head>
-<body class="py-4">
-  <div class="container">
-    <div class="text-center mb-4">
-      <h2 class="fw-bold">AI Resume Parser & ATS Engine</h2>
-      <p class="text-muted">Automated Document Parsing, Entity Extraction, and Candidate Management</p>
+<body>
+
+  <header class="app-header d-flex justify-content-between align-items-center">
+    <div class="brand">
+      <div class="gemini-sparkle">✦</div>
+      <div class="brand-text d-flex align-items-center gap-2">
+        <h1>Reddy AI</h1>
+        <span class="badge-pro">ATS ENGINE</span>
+      </div>
     </div>
 
-    <div class="row g-4">
-      <!-- Upload Card -->
-      <div class="col-lg-5">
-        <div class="card p-4 h-100">
-          <h5 class="fw-semibold mb-3">Upload Candidate Resume</h5>
-          <form id="uploadForm">
-            <div class="mb-3">
-              <label for="resumeFile" class="form-label text-muted">Select PDF or DOCX file</label>
-              <input class="form-control" type="file" id="resumeFile" accept=".pdf,.docx" required>
-            </div>
-            <button type="submit" class="btn btn-primary w-100" id="submitBtn">
-              Parse Resume
-            </button>
-          </form>
+    <div id="auth-section">
+      {% if current_user.is_authenticated %}
+        <div class="user-pill">
+          <span class="user-dot"></span>
+          <span class="user-name">{{ current_user.username }}</span>
+          <a href="/logout" class="auth-btn-ghost text-decoration-none">Logout</a>
+        </div>
+      {% else %}
+        <button id="open-auth-btn" class="auth-btn-primary" onclick="openAuthModal('login')">Sign In</button>
+      {% endif %}
+    </div>
+  </header>
 
-          <div id="statusAlert" class="alert d-none mt-3" role="alert"></div>
-
-          <div id="parseResult" class="mt-4 d-none">
-            <h6 class="fw-bold text-success">Extraction Summary</h6>
-            <ul class="list-group list-group-flush small">
-              <li class="list-group-item px-0"><strong>Name:</strong> <span id="resName"></span></li>
-              <li class="list-group-item px-0"><strong>Email:</strong> <span id="resEmail"></span></li>
-              <li class="list-group-item px-0"><strong>Phone:</strong> <span id="resPhone"></span></li>
-              <li class="list-group-item px-0">
-                <strong>Skills:</strong>
-                <div id="resSkills" class="mt-1"></div>
-              </li>
-            </ul>
+  <div class="container py-4">
+    {% if not current_user.is_authenticated %}
+      <div class="card-custom p-5 text-center my-4">
+        <div class="gemini-sparkle mb-2" style="font-size: 2.2rem;">✦</div>
+        <h2 class="fw-bold mb-2">Welcome to Reddy AI ATS Engine</h2>
+        <p class="text-muted mx-auto mb-4" style="max-width: 540px;">
+          A secure, high-precision document parsing engine. Sign in to parse candidate resumes, extract skills taxonomies, and maintain your private repository.
+        </p>
+        <button class="btn btn-primary px-4 py-2 fw-semibold" onclick="openAuthModal('login')">
+          Sign In to Access Workspace
+        </button>
+      </div>
+    {% else %}
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <div class="stat-widget">
+            <span class="text-muted small text-uppercase fw-semibold">My Resumes</span>
+            <h3 class="fw-bold text-white mb-0" id="metricTotal">0</h3>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-widget">
+            <span class="text-muted small text-uppercase fw-semibold">Parser Model</span>
+            <h4 class="fw-bold text-info mb-0">spaCy + Regex Hybrid</h4>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-widget">
+            <span class="text-muted small text-uppercase fw-semibold">Vault Storage</span>
+            <h4 class="fw-bold text-success mb-0">Isolated SQLite</h4>
           </div>
         </div>
       </div>
 
-      <!-- Candidate Records Table -->
-      <div class="col-lg-7">
-        <div class="card p-4 h-100">
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="card-custom p-4 h-100">
+            <h5 class="fw-bold mb-3"><i class="bi bi-cloud-arrow-up-fill text-primary me-1"></i> Parse Resume</h5>
+            <form id="uploadForm">
+              <div class="upload-zone mb-3" id="dropZone" onclick="document.getElementById('resumeFile').click()">
+                <input class="d-none" type="file" id="resumeFile" accept=".pdf,.docx" required>
+                <div class="upload-icon mb-2"><i class="bi bi-file-earmark-arrow-up"></i></div>
+                <h6 class="fw-semibold mb-1 text-white" id="fileLabel">Click or Drop Resume</h6>
+                <p class="text-muted small mb-0">Accepts PDF & DOCX</p>
+              </div>
+              <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" id="submitBtn">
+                <i class="bi bi-magic me-1"></i> Parse Document
+              </button>
+            </form>
+
+            <div id="statusAlert" class="alert d-none mt-3" role="alert"></div>
+
+            <div id="parseResult" class="mt-4 d-none p-3 rounded-3" style="background: #12141f; border: 1px solid var(--card-border);">
+              <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2" style="border-color: #282d42 !important;">
+                <span class="fw-bold text-success small text-uppercase">Extraction Successful</span>
+                <i class="bi bi-check-circle-fill text-success"></i>
+              </div>
+              <div class="small">
+                <p class="mb-1 text-white"><strong>Name:</strong> <span id="resName"></span></p>
+                <p class="mb-1 text-white"><strong>Email:</strong> <span id="resEmail"></span></p>
+                <p class="mb-1 text-white"><strong>Phone:</strong> <span id="resPhone"></span></p>
+                <div class="mt-2">
+                  <strong class="text-white">Skills:</strong>
+                  <div id="resSkills" class="d-flex flex-wrap gap-1 mt-1"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-8">
+          <div class="card-custom p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="fw-bold mb-0 text-white"><i class="bi bi-shield-lock-fill text-primary me-1"></i> My Resumes Vault</h5>
+              <div class="d-flex gap-2">
+                <input type="text" id="searchInput" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Search my records..." onkeyup="filterCandidates()">
+                <button class="btn btn-sm btn-outline-secondary" onclick="loadCandidates()"><i class="bi bi-arrow-clockwise"></i></button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-dark-custom table-hover align-middle small mb-0">
+                <thead>
+                  <tr style="border-bottom: 2px solid #232738;">
+                    <th>#</th>
+                    <th>Candidate</th>
+                    <th>Contact</th>
+                    <th>Document</th>
+                    <th class="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="candidatesTableBody">
+                  <tr><td colspan="5" class="text-center text-muted py-4">Loading private files...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="modal fade" id="candidateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content" style="background: #181b28; border: 1px solid var(--card-border); color: #fff;">
+        <div class="modal-header border-bottom border-dark">
+          <div>
+            <h5 class="modal-title fw-bold mb-0" id="modalCandidateName">Candidate Profile</h5>
+            <span class="text-muted small" id="modalParsedAt"></span>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="row g-3 mb-3 p-3 rounded-3" style="background: #12141f; border: 1px solid var(--card-border);">
+            <div class="col-md-6">
+              <span class="text-muted small">Email Address</span>
+              <div class="fw-semibold text-white" id="modalEmail"></div>
+            </div>
+            <div class="col-md-6">
+              <span class="text-muted small">Contact Number</span>
+              <div class="fw-semibold text-white" id="modalPhone"></div>
+            </div>
+          </div>
+
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="fw-semibold mb-0">Parsed Candidates</h5>
-            <button class="btn btn-sm btn-outline-secondary" onclick="loadCandidates()">Refresh</button>
+            <span class="fw-bold">File: <code id="modalFilename" class="text-info"></code></span>
+            <a href="#" id="modalDownloadBtn" class="btn btn-sm btn-primary" download>
+              <i class="bi bi-download me-1"></i> Download Resume
+            </a>
           </div>
-          <div class="table-responsive">
-            <table class="table table-hover align-middle small">
-              <thead class="table-light">
-                <tr>
-                  <th>ID</th>
-                  <th>Candidate</th>
-                  <th>Contact</th>
-                  <th>Skills Identified</th>
-                </tr>
-              </thead>
-              <tbody id="candidatesTableBody">
-                <tr><td colspan="4" class="text-center text-muted py-3">Loading records...</td></tr>
-              </tbody>
-            </table>
-          </div>
+
+          <h6 class="fw-bold mt-4 mb-2 text-warning"><i class="bi bi-lightning-charge-fill me-1"></i> Extracted Skills</h6>
+          <div id="modalSkills" class="d-flex flex-wrap gap-1 mb-3"></div>
+
+          <h6 class="fw-bold mt-4 mb-2 text-info"><i class="bi bi-mortarboard-fill me-1"></i> Education</h6>
+          <div class="p-3 rounded-3 small" style="background: #12141f; white-space: pre-wrap;" id="modalEducation"></div>
+
+          <h6 class="fw-bold mt-4 mb-2 text-primary"><i class="bi bi-briefcase-fill me-1"></i> Experience</h6>
+          <div class="p-3 rounded-3 small" style="background: #12141f; white-space: pre-wrap;" id="modalExperience"></div>
+
+          <h6 class="fw-bold mt-4 mb-2 text-secondary"><i class="bi bi-folder-fill me-1"></i> Projects</h6>
+          <div class="p-3 rounded-3 small" style="background: #12141f; white-space: pre-wrap;" id="modalProjects"></div>
         </div>
       </div>
     </div>
   </div>
 
+  <div class="auth-overlay" id="auth-modal" style="display: none;">
+    <div class="auth-box">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Login</button>
+        <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Create Account</button>
+        <button class="auth-close" onclick="closeAuthModal()">&times;</button>
+      </div>
+
+      <form id="form-login" class="auth-form" onsubmit="handleAuthSubmit(event, 'login')">
+        <div>
+          <label>Username or Email</label>
+          <input type="text" id="login-identifier" required placeholder="Enter username or email">
+        </div>
+        <div>
+          <label>Password</label>
+          <input type="password" id="login-password" required placeholder="••••••••">
+        </div>
+        <div class="auth-error" id="login-error"></div>
+        <button type="submit" class="auth-submit-btn">Sign In to Reddy AI</button>
+      </form>
+
+      <form id="form-signup" class="auth-form" style="display: none;" onsubmit="handleAuthSubmit(event, 'signup')">
+        <div>
+          <label>Username</label>
+          <input type="text" id="signup-username" required placeholder="e.g. reddy_coder">
+        </div>
+        <div>
+          <label>Email</label>
+          <input type="email" id="signup-email" required placeholder="name@example.com">
+        </div>
+        <div>
+          <label>Password</label>
+          <input type="password" id="signup-password" required placeholder="Create secure password">
+        </div>
+        <div class="auth-error" id="signup-error"></div>
+        <button type="submit" class="auth-submit-btn">Create Account</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    let candidateDataStore = [];
+    const candidateModalEl = document.getElementById('candidateModal');
+    const candidateModal = candidateModalEl ? new bootstrap.Modal(candidateModalEl) : null;
+
+    function openAuthModal(tab = 'login') {
+      document.getElementById('auth-modal').style.display = 'flex';
+      switchAuthTab(tab);
+    }
+
+    function closeAuthModal() {
+      document.getElementById('auth-modal').style.display = 'none';
+    }
+
+    function switchAuthTab(tab) {
+      const loginTab = document.getElementById('tab-login');
+      const signupTab = document.getElementById('tab-signup');
+      const loginForm = document.getElementById('form-login');
+      const signupForm = document.getElementById('form-signup');
+
+      if (tab === 'login') {
+        loginTab.classList.add('active');
+        signupTab.classList.remove('active');
+        loginForm.style.display = 'block';
+        signupForm.style.display = 'none';
+      } else {
+        signupTab.classList.add('active');
+        loginTab.classList.remove('active');
+        signupForm.style.display = 'block';
+        loginForm.style.display = 'none';
+      }
+    }
+
+    async function handleAuthSubmit(e, action) {
+      e.preventDefault();
+      const endpoint = action === 'login' ? '/api/login' : '/api/register';
+      const errorBox = document.getElementById(action === 'login' ? 'login-error' : 'signup-error');
+      errorBox.style.display = 'none';
+
+      let payload = {};
+      if (action === 'login') {
+        payload = {
+          identifier: document.getElementById('login-identifier').value.trim(),
+          password: document.getElementById('login-password').value
+        };
+      } else {
+        payload = {
+          username: document.getElementById('signup-username').value.trim(),
+          email: document.getElementById('signup-email').value.trim(),
+          password: document.getElementById('signup-password').value
+        };
+      }
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          errorBox.textContent = data.error || "Authentication failed.";
+          errorBox.style.display = 'block';
+        }
+      } catch (err) {
+        errorBox.textContent = "Server connection error.";
+        errorBox.style.display = 'block';
+      }
+    }
+
+    function getSkillBadgeClass(category) {
+      if (category.includes('language')) return 'badge-lang';
+      if (category.includes('framework')) return 'badge-framework';
+      if (category.includes('database')) return 'badge-db';
+      if (category.includes('cloud')) return 'badge-cloud';
+      return 'badge-ai';
+    }
+
     async function loadCandidates() {
       try {
         const res = await fetch("/api/resumes");
+        if (res.status === 401) return;
         const data = await res.json();
-        const tbody = document.getElementById("candidatesTableBody");
-        tbody.innerHTML = "";
-
-        if (!data.candidates || data.candidates.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">No candidates recorded yet.</td></tr>';
-          return;
-        }
-
-        data.candidates.forEach(c => {
-          let skillsBadges = "";
-          for (const category in c.skills) {
-            c.skills[category].forEach(s => {
-              skillsBadges += `<span class="badge bg-secondary badge-skill">${s}</span> `;
-            });
-          }
-
-          tbody.innerHTML += `
-            <tr>
-              <td><strong>#${c.id}</strong></td>
-              <td>${c.candidate_name || '<span class="text-muted">N/A</span>'}</td>
-              <td>
-                <div>${c.email || 'N/A'}</div>
-                <div class="text-muted">${c.phone || ''}</div>
-              </td>
-              <td>${skillsBadges || '<span class="text-muted">None</span>'}</td>
-            </tr>
-          `;
-        });
+        candidateDataStore = data.candidates || [];
+        
+        const metricTotal = document.getElementById("metricTotal");
+        if (metricTotal) metricTotal.textContent = data.total_resumes || 0;
+        renderCandidateTable(candidateDataStore);
       } catch (err) {
         console.error("Failed to load records:", err);
       }
     }
 
-    document.getElementById("uploadForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const fileInput = document.getElementById("resumeFile");
-      const btn = document.getElementById("submitBtn");
-      const alertBox = document.getElementById("statusAlert");
-      const resultBox = document.getElementById("parseResult");
+    function renderCandidateTable(records) {
+      const tbody = document.getElementById("candidatesTableBody");
+      if (!tbody) return;
+      tbody.innerHTML = "";
 
-      if (!fileInput.files[0]) return;
-
-      const formData = new FormData();
-      formData.append("resume", fileInput.files[0]);
-
-      btn.disabled = true;
-      btn.textContent = "Processing NLP Pipeline...";
-      alertBox.className = "alert d-none";
-
-      try {
-        const res = await fetch("/api/parse", { method: "POST", body: formData });
-        const result = await res.json();
-
-        if (res.ok) {
-          alertBox.className = "alert alert-success mt-3";
-          alertBox.textContent = "Resume successfully processed and saved!";
-          
-          document.getElementById("resName").textContent = result.data.candidate_name || "N/A";
-          document.getElementById("resEmail").textContent = result.data.email || "N/A";
-          document.getElementById("resPhone").textContent = result.data.phone || "N/A";
-
-          const skillsContainer = document.getElementById("resSkills");
-          skillsContainer.innerHTML = "";
-          for (const cat in result.data.skills) {
-            result.data.skills[cat].forEach(s => {
-              skillsContainer.innerHTML += `<span class="badge bg-primary badge-skill">${s}</span> `;
-            });
-          }
-
-          resultBox.classList.remove("d-none");
-          loadCandidates();
-          fileInput.value = "";
-        } else {
-          alertBox.className = "alert alert-danger mt-3";
-          alertBox.textContent = result.error || "Failed to process document.";
-        }
-      } catch (err) {
-        alertBox.className = "alert alert-danger mt-3";
-        alertBox.textContent = "Server error while processing upload.";
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Parse Resume";
+      if (records.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No resumes stored in your account.</td></tr>';
+        return;
       }
-    });
+
+      records.forEach((c, displayIndex) => {
+        const idx = candidateDataStore.indexOf(c);
+        const userSequenceNumber = records.length - displayIndex;
+
+        tbody.innerHTML += `
+          <tr>
+            <td><span class="badge bg-dark border border-secondary">#${userSequenceNumber}</span></td>
+            <td><div class="fw-bold text-white">${c.candidate_name || '<span class="text-muted">Unidentified</span>'}</div></td>
+            <td>
+              <div><i class="bi bi-envelope text-muted me-1"></i>${c.email || 'N/A'}</div>
+              <div class="text-muted small"><i class="bi bi-telephone text-muted me-1"></i>${c.phone || 'N/A'}</div>
+            </td>
+            <td><code class="text-info">${c.filename}</code></td>
+            <td class="text-end">
+              <div class="btn-group btn-group-sm">
+                <button class="btn btn-primary" onclick="showDetails(${idx})"><i class="bi bi-eye"></i> View</button>
+                <a href="/api/download/${c.filename}" class="btn btn-outline-secondary" download><i class="bi bi-download"></i></a>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function filterCandidates() {
+      const query = document.getElementById("searchInput").value.toLowerCase();
+      const filtered = candidateDataStore.filter(c => {
+        const name = (c.candidate_name || "").toLowerCase();
+        const email = (c.email || "").toLowerCase();
+        const allSkills = JSON.stringify(c.skills || {}).toLowerCase();
+        return name.includes(query) || email.includes(query) || allSkills.includes(query);
+      });
+      renderCandidateTable(filtered);
+    }
+
+    function showDetails(index) {
+      const c = candidateDataStore[index];
+      if (!c || !candidateModal) return;
+
+      document.getElementById("modalCandidateName").textContent = c.candidate_name || "Candidate Profile";
+      document.getElementById("modalEmail").textContent = c.email || "N/A";
+      document.getElementById("modalPhone").textContent = c.phone || "N/A";
+      document.getElementById("modalFilename").textContent = c.filename || "N/A";
+      document.getElementById("modalParsedAt").textContent = c.parsed_at ? `Parsed on ${new Date(c.parsed_at).toLocaleString()}` : "";
+
+      const downloadBtn = document.getElementById("modalDownloadBtn");
+      downloadBtn.href = `/api/download/${c.filename}`;
+
+      const skillsBox = document.getElementById("modalSkills");
+      skillsBox.innerHTML = "";
+      let hasSkills = false;
+      for (const cat in c.skills) {
+        if (c.skills[cat].length > 0) {
+          hasSkills = true;
+          const badgeClass = getSkillBadgeClass(cat);
+          c.skills[cat].forEach(s => {
+            skillsBox.innerHTML += `<span class="badge-skill ${badgeClass}">${s}</span>`;
+          });
+        }
+      }
+      if (!hasSkills) skillsBox.innerHTML = '<span class="text-muted small">No technical skills detected.</span>';
+
+      document.getElementById("modalEducation").textContent = c.education || "No education section identified.";
+      document.getElementById("modalExperience").textContent = c.experience || "No experience section identified.";
+      document.getElementById("modalProjects").textContent = c.projects || "No projects section identified.";
+
+      candidateModal.show();
+    }
+
+    const dropZone = document.getElementById("dropZone");
+    const fileInput = document.getElementById("resumeFile");
+    const fileLabel = document.getElementById("fileLabel");
+
+    if (dropZone && fileInput) {
+      ['dragenter', 'dragover'].forEach(name => {
+        dropZone.addEventListener(name, (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+      });
+      ['dragleave', 'drop'].forEach(name => {
+        dropZone.addEventListener(name, (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); });
+      });
+      dropZone.addEventListener('drop', (e) => {
+        if (e.dataTransfer.files.length) {
+          fileInput.files = e.dataTransfer.files;
+          fileLabel.textContent = e.dataTransfer.files[0].name;
+        }
+      });
+      fileInput.addEventListener('change', () => {
+        if (fileInput.files[0]) fileLabel.textContent = fileInput.files[0].name;
+      });
+
+      document.getElementById("uploadForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById("submitBtn");
+        const alertBox = document.getElementById("statusAlert");
+        const resultBox = document.getElementById("parseResult");
+
+        if (!fileInput.files[0]) return;
+
+        const formData = new FormData();
+        formData.append("resume", fileInput.files[0]);
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Parsing Document...';
+        alertBox.className = "alert d-none";
+
+        try {
+          const res = await fetch("/api/parse", { method: "POST", body: formData });
+          const result = await res.json();
+
+          if (res.ok) {
+            alertBox.className = "alert alert-success mt-3 py-2 small";
+            alertBox.textContent = "Resume parsed and saved to your private vault!";
+            
+            document.getElementById("resName").textContent = result.data.candidate_name || "N/A";
+            document.getElementById("resEmail").textContent = result.data.email || "N/A";
+            document.getElementById("resPhone").textContent = result.data.phone || "N/A";
+
+            const skillsContainer = document.getElementById("resSkills");
+            skillsContainer.innerHTML = "";
+            for (const cat in result.data.skills) {
+              const badgeClass = getSkillBadgeClass(cat);
+              result.data.skills[cat].forEach(s => {
+                skillsContainer.innerHTML += `<span class="badge-skill ${badgeClass}">${s}</span>`;
+              });
+            }
+
+            resultBox.classList.remove("d-none");
+            loadCandidates();
+            fileInput.value = "";
+            fileLabel.textContent = "Click or Drop Resume";
+          } else {
+            alertBox.className = "alert alert-danger mt-3 py-2 small";
+            alertBox.textContent = result.error || "Failed to process document.";
+          }
+        } catch (err) {
+          alertBox.className = "alert alert-danger mt-3 py-2 small";
+          alertBox.textContent = "Server error during file extraction.";
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="bi bi-magic me-1"></i> Parse Document';
+        }
+      });
+    }
 
     window.onload = loadCandidates;
   </script>
