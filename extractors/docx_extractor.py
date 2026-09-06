@@ -1,45 +1,62 @@
+import io
 import os
+import zipfile
 from docx import Document
+
 
 def extract_text_from_docx(file_path: str) -> str:
     """
-    Extracts text from paragraphs and tables in a .docx file using python-docx.
-    
-    Args:
-        file_path (str): Path to the .docx document.
-        
-    Returns:
-        str: Extracted plain text content.
+    Safely extracts plain text and tables from a .docx file.
+    Validates zip packaging and uses memory streams to prevent OS buffer locks.
     """
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"DOCX file not found at: {file_path}")
 
-    doc = Document(file_path)
-    extracted_text = []
+    if os.path.getsize(file_path) == 0:
+        raise ValueError("Uploaded file is empty (0 bytes).")
 
-    # 1. Extract text from standard paragraphs
-    for paragraph in doc.paragraphs:
-        cleaned_line = paragraph.text.strip()
-        if cleaned_line:
-            extracted_text.append(cleaned_line)
+    with open(file_path, "rb") as f:
+        file_bytes = f.read()
 
-    # 2. Extract text from any tables inside the document
-    for table in doc.tables:
-        for row in table.rows:
-            row_data = [cell.text.strip() for cell in row.cells if cell.text.strip()]
-            if row_data:
-                extracted_text.append(" | ".join(row_data))
+    # Validate valid OpenXML ZIP archive
+    if not zipfile.is_zipfile(io.BytesIO(file_bytes)):
+        # Fallback: attempt plain text recovery if it is raw text or mislabeled
+        try:
+            raw_text = file_bytes.decode("utf-8", errors="ignore")
+            clean = "".join(ch for ch in raw_text if ch.isprintable() or ch in "\n\t")
+            if len(clean.strip()) > 40:
+                return clean.strip()
+        except Exception:
+            pass
+        raise ValueError(
+            "Uploaded file is not a valid modern .docx package. "
+            "If this file is an older Word (.doc) or RTF document, please save/export it as .docx or .pdf."
+        )
 
-    return "\n".join(extracted_text).strip()
+    try:
+        doc = Document(io.BytesIO(file_bytes))
+        extracted_text = []
 
+        # 1. Paragraphs
+        for paragraph in doc.paragraphs:
+            cleaned_line = paragraph.text.strip()
+            if cleaned_line:
+                extracted_text.append(cleaned_line)
 
-if __name__ == "__main__":
-    test_docx_path = "sample_resume.docx"
-    if os.path.exists(test_docx_path):
-        print("=== EXTRACTED DOCX TEXT ===")
-        content = extract_text_from_docx(test_docx_path)
-        print(content)
-        print("===========================")
-        print(f"Total characters extracted: {len(content)}")
-    else:
-        print(f"Could not find test file: {test_docx_path}")
+        # 2. Tables
+        for table in doc.tables:
+            for row in table.rows:
+                row_data = [cell.text.strip() for cell in row.cells if cell.text.strip()]
+                if row_data:
+                    extracted_text.append(" | ".join(row_data))
+
+        result = "\n".join(extracted_text).strip()
+        if not result:
+            raise ValueError("No readable text found inside the Word document.")
+
+        return result
+
+    except Exception as e:
+        if isinstance(e, ValueError):
+            raise e
+        raise ValueError(f"Failed to process Word package: {str(e)}")

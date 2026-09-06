@@ -127,7 +127,11 @@ def upload_and_parse():
         user_specific_filename = f"u{current_user.id}_{safe_base}"
         save_path = os.path.abspath(os.path.join(app.config["UPLOAD_FOLDER"], user_specific_filename))
         
+        # Save and verify the file content is written to disk
         file.save(save_path)
+
+        if not os.path.exists(save_path) or os.path.getsize(save_path) == 0:
+            return jsonify({"error": "Failed to save file to server storage. Please re-upload."}), 500
 
         try:
             parsed_data = parse_resume(save_path)
